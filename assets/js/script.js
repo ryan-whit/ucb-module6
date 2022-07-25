@@ -62,80 +62,63 @@ function parseUserInput(query) {
 
 // Zip API Call for geocode
 // https://openweathermap.org/api/geocoding-api#direct_zip
-function getLatLonFromZip(queryUrl) {
-	fetch(queryUrl)
-	  .then(function (response) {
-		if (!response.ok) {
-		  throw response.json();
-		}
-		return response.json();
-	  })
-	  .then(function (locRes) {
-			console.log(locRes);
-
-			// TODO: handle empty response
-			var latLonResults = {
-			lattitude: locRes.lat,
-			longitude: locRes.long,
-		}
-		return latLonResults;
-  
-	  })
-	  .catch(function (error) {
-			console.error(error);
-	  });
-
+async function getLatLonFromZip(queryUrl) {
+	try {
+		const response = await fetch(queryUrl);
+		const responseData = await response.json();
+		// TODO: handle empty response
+		console.log("Response from async: ", responseData);
+		const latLonResults = {
+			lattitude: responseData.lat,
+			longitude: responseData.lon,
+		};
+	console.log("Extracted results: ", latLonResults);
+	return latLonResults;
+	} catch (error) {
+		return console.warn(error);
+	}
 }
 
-// Direct API Call for geocode
+
+// Direct API Call for geocode (<city, state, country> format)
 // https://openweathermap.org/api/geocoding-api#direct_name
-function getLatLonFromCityStateCountry(queryUrl) {
-	fetch(queryUrl)
-	  
-		.then(function (response) {
-		if (!response.ok) {
-		  throw response.json();
-		}
-		return response.json();
-	  })
-	  
-		.then(function (locRes) {
-			console.log(locRes);
-
-		if (!locRes.length) {
-		  console.log('No results found!');
-			throw locRes 
-		} else {
-			var latLonResults = {
-				lattitude: locRes[0].lat,
-				longitude: locRes[0].long,
-			}
-			return latLonResults;
-		}
-	  })
-	  
-		.catch(function (error) {
-		console.error(error);
-	  });
-
+async function getLatLonFromCityStateCountry(queryUrl) {
+	try {
+		const response = await fetch(queryUrl);
+		const responseData = await response.json();
+		console.log("Response from async: ", responseData);
+		
+		const latLonResults = {
+			lattitude: responseData[0].lat,
+			longitude: responseData[0].lon,
+		};
+		
+	console.log("Extracted results: ", latLonResults);
+	return latLonResults;
+	} catch (error) {
+		return console.warn(error);
+	}
 }
 
 
 // Use Geocode API to get lat/lon for the data request
-function getLatLonFromGeocodeApi(query) {
+async function getLatLonFromGeocodeApi(query) {
   
 	// Construct the query URL based on the user input style/type
 	var geocodeInput = parseUserInput(query);
 	var locQueryUrl
-	var latLonResults
+	// var latLonResults
+	
 	if (geocodeInput.type === GeocodeType.Zip) {
 		locQueryUrl = GeocodeAPIs.Zip + '?zip=' + geocodeInput.zip.toString() + '&appid=' + API_KEY;
-		var latLonResults = getLatLonFromZip(locQueryUrl)
+		var latLonResults = await getLatLonFromZip(locQueryUrl)
 	}
 	else {
 		locQueryUrl = GeocodeAPIs.CityStateCountry + '?q=' + query + '&limit=1' + '&appid=' + API_KEY;
-		var latLonResults = getLatLonFromCityStateCountry(locQueryUrl)
+		var latLonResults = await getLatLonFromCityStateCountry(locQueryUrl)
 	};
+	
+	console.log("Returned results: ", latLonResults);
 
 	resultContentEl.textContent = "Lat: " + latLonResults.lattitude.toString() + ". Lon: " + latLonResults.longitude.toString()
 
