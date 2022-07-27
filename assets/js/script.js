@@ -127,20 +127,24 @@ async function getLatLonFromGeocodeApi(query) {
 }
 
 
-function searchApi(query) {
+function searchApi(latLonResponse) {
   
-	var locQueryUrl = OPEN_WEATHER_API + '?q=' + query + '&limit=1' + '&appid=' + API_KEY;
+	var locQueryUrl = (
+		OPEN_WEATHER_API
+		+ '?lat=' + latLonResponse.lattitude
+		+ '&lon=' + latLonResponse.longitude
+		+ '&appid=' + API_KEY
+	);
   
 	fetch(locQueryUrl)
 	  .then(function (response) {
 		if (!response.ok) {
 		  throw response.json();
 		}
-  
 		return response.json();
 	  })
-	  .then(function (locRes) {
-		// write query to page so user knows what they are viewing
+	  
+		.then(function (locRes) {
 		// resultTextEl.textContent = locRes.search.query;
   
 		console.log(locRes);
@@ -162,7 +166,7 @@ function searchApi(query) {
 
 
 
-function handleSearchFormSubmit(event) {
+async function handleSearchFormSubmit(event) {
   event.preventDefault();
 
   var searchInputVal = document.querySelector('#search-input').value;
@@ -174,8 +178,8 @@ function handleSearchFormSubmit(event) {
 
   console.log("searchInputVal: ", searchInputVal);
 
-  var latLonResponse = getLatLonFromGeocodeApi(searchInputVal);
-//   searchApi(searchInputVal);
+  var latLonResponse = await getLatLonFromGeocodeApi(searchInputVal);
+  searchApi(latLonResponse);
 
 }
 
